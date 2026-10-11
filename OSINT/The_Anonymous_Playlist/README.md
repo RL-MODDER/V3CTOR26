@@ -1,48 +1,18 @@
-# Repository Layout & Structure
+# The Anonymous Playlist: Steganographic QR Matrix Reconstruction
 
-```
-.
-└── OSINT/
-    └── The_Anonymous_Playlist/
-        ├── README.md
-        ├── assets/
-        │   ├── 1_Try_Again.jpg
-        │   ├── 2_Ignore_this.jpg
-        │   ├── 3_Keep_digging.jpg
-        │   ├── 4_Dont_ignore_this.jpg
-        │   ├── 5_Just_Kidding.jpg
-        │   ├── 6_Are_you_tired.jpg
-        │   ├── 7_More_way_to_go.jpg
-        │   ├── 8_Somethings_missing.jpg
-        │   ├── 9_Put_Me_Together.jpg
-        │   ├── qr_reconstructed.png
-        │   └── qr_clean.png
-        └── solution/
-            └── solve.py
-```
-
----
-
-# `OSINT/The_Anonymous_Playlist/README.md`
-
-## Challenge Metadata
-
-| Field | Value |
+| Parameter | Details |
 | :--- | :--- |
-| **Event** | V3CT0R CTF 2026 |
-| **Category** | OSINT (Open-Source Intelligence) |
-| **Author** | Cybernexus CTFd Team, NGPiTECH |
 | **Target Identifier** | `@ctfanonnnn` |
 | **Vulnerability Class** | Information Leakage / Multi-Stage Asset Fragmentation (CWE-200 / CWE-538) |
 | **Flag** | `V3ct0r{h1d3_n_l3375}` |
 
 ---
 
-## Executive Summary
+## 1. Executive Summary
 
-**The Anonymous Playlist** is an OSINT challenge centered on cross-platform digital footprinting, metadata extraction, redirect analysis, and visual data reconstruction. 
+This investigation centers on cross-platform digital footprinting, metadata extraction, redirect analysis, and visual data reconstruction.
 
-The threat actor handle `@ctfanonnnn` left traces across public social media platforms. Initial enumeration identified a target profile on X (formerly Twitter) containing an HTTP link shortener URL (`t.co`). Resolving this link led to an obscure Spotify user profile containing nine public playlists with zero tracks. Each playlist featured customized cover art representing a fraction of a fragmented Version 2 (25×25) QR code. By determining the dimensional bounds and boundary alignment of the 3×3 tile matrix, the spatial array was reassembled into a valid QR code yielding the flag: `V3ct0r{h1d3_n_l3375}`.
+The threat actor handle `@ctfanonnnn` left traces across public social media platforms. Initial enumeration identified a target profile on X containing an HTTP link shortener URL (`t.co`). Resolving this link led to an obscure Spotify user profile containing nine public playlists with zero tracks. Each playlist featured customized cover art representing a fraction of a fragmented Version 2 (25×25) QR code. By determining the dimensional bounds and boundary alignment of the 3×3 tile matrix, the spatial array was reassembled into a valid QR code yielding the flag: `V3ct0r{h1d3_n_l3375}`.
 
 ---
 

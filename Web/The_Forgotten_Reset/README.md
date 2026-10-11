@@ -1,26 +1,21 @@
-# V3CT0R CTF 2026 — Web Security Writeup
+# The Forgotten Reset: Account Takeover via Deterministic Token Forgery
 
-## Challenge: The Forgotten Reset
-
-| Property | Value |
+| Parameter | Details |
 | :--- | :--- |
-| **Event** | V3CT0R CTF 2026 |
-| **Category** | Web Security |
-| **Challenge Author** | Sri Sakthi Dinesh S |
 | **Target URL** | `https://web2.cybernexus.live` |
-| **Vulnerability Class** | Broken Authentication / Insecure Password Recovery (CWE-640) |
-| **Secondary Vulnerability** | Observable Response Discrepancy / User Enumeration (CWE-204) |
+| **Vulnerability Class** | Insecure Password Recovery / Predictable Token Forgery (CWE-640) |
+| **Secondary Flaw** | Observable Response Discrepancy / User Enumeration (CWE-204) |
 | **Flag** | `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}` |
 
 ---
 
 ## 1. Executive Summary
 
-During V3CT0R CTF 2026, the **The Forgotten Reset** challenge presented an internal workforce portal (`Meridian Technologies`) featuring employee services, an internal messaging system, and an account recovery workflow.
+The target system (`Meridian Technologies`) exposes an internal workforce portal featuring employee services, an internal mailbox, and an account recovery mechanism.
 
-An architectural security review of the account recovery mechanism revealed that password reset tokens were generated deterministically by concatenating a static prefix, the target username, and the current UTC date (`MERIDIAN-<username>-<date>`), disguised solely via Base64 encoding.
+An architectural review of the password reset workflow revealed that recovery tokens are generated deterministically by concatenating a static prefix, the target username, and the current UTC date (`MERIDIAN-<username>-<date>`), obfuscated solely via Base64 encoding.
 
-Leveraging this logic flaw alongside account enumeration on the recovery endpoint, an unauthenticated attacker could forge reset tokens for high-privilege accounts. Resetting the password for `benefits-admin` enabled full administrative access to the workspace, leading to the retrieval of the flag from internal migration notes.
+Leveraging this logic flaw alongside account enumeration on the recovery endpoint, an unauthenticated attacker can forge reset tokens for high-privilege accounts. Resetting the password for `benefits-admin` yields administrative access to the workspace, enabling retrieval of internal system credentials and flags.
 
 ---
 

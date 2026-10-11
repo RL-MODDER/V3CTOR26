@@ -1,12 +1,7 @@
-# Invoice #42 — Web Security Writeup
+# Invoice #42: Broken Object-Level Authorization (IDOR)
 
-## Challenge Metadata
-
-| Field | Details |
+| Parameter | Details |
 | :--- | :--- |
-| **Event** | V3CT0R CTF 2026 |
-| **Category** | Web Security |
-| **Challenge Author** | Sri Sakthi Dinesh S |
 | **Target URL** | `https://web3.cybernexus.live/` |
 | **Vulnerability Class** | Insecure Direct Object Reference (IDOR) / Broken Object-Level Authorization (BOLA) |
 | **CWE Classification** | CWE-639: Authorization Bypass Through User-Controlled Key |
@@ -16,9 +11,9 @@
 
 ## 1. Executive Summary
 
-During V3CT0R CTF 2026, the **Invoice #42** challenge presented the Meridian Market customer portal, an e-commerce order management system. Authenticated access was established using default customer credentials (`John` / `123456`).
+The target system (`Meridian Market`) exposes an e-commerce customer portal for order tracking and invoice management. Authenticated access was established using default customer credentials (`John` / `123456`).
 
-While the user interface dashboard restricted the displayed order list to records owned by the active session (`Order #1001`), the backend route responsible for rendering individual order details failed to validate whether the authenticated user possessed ownership rights to the requested record. By manipulating the direct object identifier in the request path (`/order/1003`), an attacker could view arbitrary customer invoices, exposing confidential customer records and the flag.
+While the user interface dashboard restricts the displayed order list to records owned by the active session (`Order #1001`), the backend route responsible for rendering individual order details fails to validate whether the authenticated user possesses ownership rights to the requested record. By manipulating the direct object identifier in the request path (`/order/1003`), an attacker can view arbitrary customer invoices, exposing confidential customer records and internal system flags.
 
 ---
 
