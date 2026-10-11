@@ -1,4 +1,4 @@
-#  Meridian Market — IDOR / BOLA
+# 🪪 Meridian Market — IDOR / BOLA
 
 <p align="center">
   <img src="https://img.shields.io/badge/CTF-V3CT0R%202026-7C3AED?style=for-the-badge" alt="V3CT0R CTF 2026" />
