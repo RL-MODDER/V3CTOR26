@@ -1,5 +1,6 @@
 # Drafts and unconfirmed notes
 drafts/
+/assets/
 
 # OS-generated files
 .DS_Store
