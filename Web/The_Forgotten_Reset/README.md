@@ -79,6 +79,8 @@ echo "TUVSSURJQU4tZ3Vlc3QtMjAyNjEwMTA=" | base64 -d
 # Output: MERIDIAN-guest-20261010
 ```
 
+![Token Decode](assets/token_decode.png)
+
 Analysis confirmed the token parameters:
 * Static Prefix: `MERIDIAN-`
 * Target Handle: `guest`
@@ -124,6 +126,8 @@ curl -s -X POST "https://web2.cybernexus.live/reset?token=${FORGED_TOKEN}" \
    ```bash
    echo "VjNjdDBye1JlY292ZXJ5X1Rva2Vuc19hcmVfVHJ1c3RlZF9JZGVudGlmaWVyc30=" | base64 -d
    ```
+
+![Flag Decode](assets/flag_decode.png)
 
 **Final Flag:** `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}`
 
