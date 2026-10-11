@@ -49,33 +49,6 @@ Leveraging this logic flaw alongside account enumeration on the recovery endpoin
 
 ## 3. Step-by-Step Exploitation Walkthrough
 
-```
-+------------------+     1. Trigger Recovery      +------------------------+
-|  Unauthenticated | ---------------------------> | /forgot-password       |
-|     Attacker     |                              | (Target: benefits-admin|
-+------------------+                              +------------------------+
-         |                                                   |
-         | 2. Predict Token Formula                          |
-         v                                                   v
-+-----------------------------------+             +------------------------+
-| Base64("MERIDIAN-benefits-admin-  |             | Deterministic Token    |
-| 20261010")                        |             | Generated Server-Side  |
-+-----------------------------------+             +------------------------+
-         |                                                   |
-         +-------------------------+-------------------------+
-                                   |
-                                   v 3. Submit Password Reset
-                        +--------------------+
-                        | POST /reset?token= |
-                        +--------------------+
-                                   |
-                                   v 4. Authenticate & Read Flag
-                        +--------------------+
-                        | /benefits-admin/   |
-                        | notes              |
-                        +--------------------+
-```
-
 ### Step 1: Baseline Analysis & Account Enumeration
 
 Initial inspection of default credentials (`guest:guest` / `guest:12345`) granted low-privilege access to the internal workforce portal. Reviewing system communications in the internal mailbox (`/mail/2/`) revealed operational notes referencing an administrative queue owner:

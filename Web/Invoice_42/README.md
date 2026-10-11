@@ -33,27 +33,6 @@ While the user interface dashboard restricted the displayed order list to record
   $$\text{Request URL} = \text{/order/} \parallel \text{Order\_ID}$$
 * **Flaw Impact:** Hiding records in the UI (`/dashboard`) does not secure addressable endpoints. An authenticated attacker can iterate through sequential primary keys to extract arbitrary records.
 
-```
-+------------------+         1. Authenticate         +----------------------+
-|  John (Attacker) | ------------------------------> | POST /login          |
-|  (Session Valid) |                                 +----------------------+
-+------------------+                                            |
-         |                                                      | 2. Returns Session
-         | 3. Access unowned record                             v
-         |    GET /order/1003                        +----------------------+
-         +-----------------------------------------> | Backend Route Handler|
-                                                     +----------------------+
-                                                                |
-                                                                | 4. SELECT * FROM orders
-                                                                |    WHERE id = 1003
-                                                                |    (No user_id check!)
-                                                                v
-                                                     +----------------------+
-                                                     | Returns Order #1003  |
-                                                     | Flag Disclosed       |
-                                                     +----------------------+
-```
-
 ---
 
 ## 3. Step-by-Step Exploitation Walkthrough
