@@ -7,8 +7,6 @@
 | **Event** | V3CT0R CTF 2026 |
 | **Category** | Web Security |
 | **Challenge Author** | Sri Sakthi Dinesh S |
-| **Solves** | 11 |
-| **Points** | 490 |
 | **Target URL** | `https://web2.cybernexus.live` |
 | **Vulnerability Class** | Broken Authentication / Insecure Password Recovery (CWE-640) |
 | **Secondary Vulnerability** | Observable Response Discrepancy / User Enumeration (CWE-204) |

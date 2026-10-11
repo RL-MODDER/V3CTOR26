@@ -1,6 +1,6 @@
-# V3CT0R CTF 2026 — Security Assessment & Writeups
+# V3CT0R CTF 2026 — Technical Security Writeups
 
-Publication-ready technical writeups, proof-of-concept scripts, and root-cause analyses for verified challenges solved during **V3CT0R CTF 2026**.
+Technical security writeups, root-cause analyses, and proof-of-concept exploits for challenges completed during **V3CT0R CTF 2026**.
 
 ---
 
@@ -11,25 +11,24 @@ Publication-ready technical writeups, proof-of-concept scripts, and root-cause a
 | **Event Name** | V3CT0R CTF 2026 |
 | **Organizer** | Cybernexus CTFd Team & NGPiTECH |
 | **Format** | Jeopardy CTF |
-| **Categories Solved** | Web Security, Open-Source Intelligence (OSINT) |
-| **Total Solved Points** | 1,032 pts |
+| **Assessment Domains** | Web Application Security, Open-Source Intelligence (OSINT) |
 
 ---
 
-## Solved Challenge Index
+## Technical Writeups Index
 
-### Web Security
+### Web Application Security
 
-| Challenge | Points | Solves | Vulnerability Classification | Verified Flag | Writeup Link |
-| :--- | :---: | :---: | :--- | :--- | :---: |
-| **The Forgotten Reset** | 490 | 11 | Broken Authentication / Insecure Password Recovery (CWE-640) | `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}` | [README](Web/The_Forgotten_Reset/README.md) |
-| **Invoice #42** | 492 | 9 | Insecure Direct Object Reference (IDOR / CWE-639) | `V3ct0r{1D0R_0rd3r_1003}` | [README](Web/Invoice_42/README.md) |
+| Challenge | Target URL | Vulnerability Classification | Verified Flag | Writeup |
+| :--- | :--- | :--- | :--- | :---: |
+| **The Forgotten Reset** | `https://web2.cybernexus.live` | Broken Authentication / Insecure Password Recovery (CWE-640) | `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}` | [View Report](Web/The_Forgotten_Reset/README.md) |
+| **Invoice #42** | `https://web3.cybernexus.live/` | Insecure Direct Object Reference (IDOR / CWE-639) | `V3ct0r{1D0R_0rd3r_1003}` | [View Report](Web/Invoice_42/README.md) |
 
 ### OSINT (Open-Source Intelligence)
 
-| Challenge | Points | Solves | Primary Technique | Verified Flag | Writeup Link |
-| :--- | :---: | :---: | :--- | :--- | :---: |
-| **The Anonymous Playlist** | 50 | 3 | Multi-Stage Asset Fragmentation / QR Matrix Spatial Reassembly (CWE-200) | `V3ct0r{h1d3_n_l3375}` | [README](OSINT/The_Anonymous_Playlist/README.md) |
+| Challenge | Target Scope | Technique & Vector | Verified Flag | Writeup |
+| :--- | :--- | :--- | :--- | :---: |
+| **The Anonymous Playlist** | `@ctfanonnnn` | Multi-Stage Asset Fragmentation / QR Matrix Spatial Reassembly (CWE-200) | `V3ct0r{h1d3_n_l3375}` | [View Report](OSINT/The_Anonymous_Playlist/README.md) |
 
 ---
 
@@ -42,9 +41,6 @@ Publication-ready technical writeups, proof-of-concept scripts, and root-cause a
 │   └── The_Anonymous_Playlist/
 │       ├── README.md
 │       ├── assets/
-│       │   ├── 1_Try_Again.jpg ... 9_Put_Me_Together.jpg
-│       │   ├── qr_clean.png
-│       │   └── qr_reconstructed.png
 │       └── solution/
 │           └── solve.py
 └── Web/
@@ -67,4 +63,4 @@ Publication-ready technical writeups, proof-of-concept scripts, and root-cause a
 
 ## Authorization & Compliance
 
-All vulnerability assessments, proof-of-concept exploits, and flag retrievals documented in this repository were conducted exclusively against designated V3CT0R CTF 2026 infrastructure in accordance with event terms and explicit testing authorization.
+All security assessments, vulnerability research, and PoC developments contained in this repository were conducted exclusively against designated CTF target infrastructure in accordance with event rules and explicit authorization.

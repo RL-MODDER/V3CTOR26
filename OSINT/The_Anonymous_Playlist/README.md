@@ -32,8 +32,6 @@
 | **Event** | V3CT0R CTF 2026 |
 | **Category** | OSINT (Open-Source Intelligence) |
 | **Author** | Cybernexus CTFd Team, NGPiTECH |
-| **Points** | 50 |
-| **Solves** | 3 |
 | **Target Identifier** | `@ctfanonnnn` |
 | **Vulnerability Class** | Information Leakage / Multi-Stage Asset Fragmentation (CWE-200 / CWE-538) |
 | **Flag** | `V3ct0r{h1d3_n_l3375}` |

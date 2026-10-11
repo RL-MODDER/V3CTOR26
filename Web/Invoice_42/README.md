@@ -7,8 +7,6 @@
 | **Event** | V3CT0R CTF 2026 |
 | **Category** | Web Security |
 | **Challenge Author** | Sri Sakthi Dinesh S |
-| **Points** | 492 |
-| **Solves** | 9 |
 | **Target URL** | `https://web3.cybernexus.live/` |
 | **Vulnerability Class** | Insecure Direct Object Reference (IDOR) / Broken Object-Level Authorization (BOLA) |
 | **CWE Classification** | CWE-639: Authorization Bypass Through User-Controlled Key |
