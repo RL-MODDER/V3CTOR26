@@ -21,7 +21,7 @@ Technical security writeups, root-cause analyses, and proof-of-concept exploits 
 
 | Challenge | Target URL | Vulnerability Classification | Verified Flag | Writeup |
 | :--- | :--- | :--- | :--- | :---: |
-| **The Forgotten Reset** | `https://web2.cybernexus.live` | Broken Authentication / Insecure Password Recovery (CWE-640) | `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}` | [View Report](Web/The_Forgotten_Reset/README.md) |
+| **Meridian Password Reset** | `https://web2.cybernexus.live` | Broken Authentication / Insecure Password Recovery (CWE-640) | `V3ct0r{Recovery_Tokens_are_Trusted_Identifiers}` | [View Report](Web/Meridian_Password_Reset/README.md) |
 | **Invoice #42** | `https://web3.cybernexus.live/` | Insecure Direct Object Reference (IDOR / CWE-639) | `V3ct0r{1D0R_0rd3r_1003}` | [View Report](Web/Invoice_42/README.md) |
 
 ### OSINT (Open-Source Intelligence)
@@ -46,8 +46,12 @@ Technical security writeups, root-cause analyses, and proof-of-concept exploits 
 └── Web/
     ├── Invoice_42/
     │   └── README.md
-    └── The_Forgotten_Reset/
-        └── README.md
+    └── Meridian_Password_Reset/
+        ├── README.md
+        └── images/
+            ├── guest-token.png
+            ├── admin-token.png
+            └── recovered-flag.png
 ```
 
 ---
